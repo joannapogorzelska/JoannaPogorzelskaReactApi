@@ -15,6 +15,10 @@ function App() {
       e.preventDefault();
 
     const response = await fetch(`https://en.wikipedia.org/w/rest.php/v1/search/title?q=${searchTerm}&limit=20`);
+    if (search === '') return
+    if (!response.ok) {
+      throw Error(response.statusText);
+    }
 
     const data = await response.json();
 
