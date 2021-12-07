@@ -34,7 +34,7 @@ function App() {
 
     setArticles(articles);
     setSearchHistory(prev => [ searchTerm, ...prev]);
-    setSearchTerm('')
+    setSearchTerm('');
     }
   const handleHistoryButton = () => {
     setHistoryVisible(!historyVisible)
