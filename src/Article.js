@@ -1,11 +1,13 @@
 import React from 'react';
+import './index.css';
 
 const Article = (props) => {
     return (
-        <li >
+        <li className="result">
             <h2>{props.title} </h2>
-            <h3>{props.description} </h3>
-            <p>{props.url} </p>
+            <p>{props.description} </p>
+            <a href={props.url} target="blank" rel="noreferrer" >read more</a>
+            <p>{props.code} </p>
         </li>
     );
 };
