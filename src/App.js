@@ -1,68 +1,60 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 
 import ArticlesList from './ArticlesList';
+import Button from './Button';
+import ShowHistory from './ShowHistory';
 import './index.css';
 
 function App() {
-  const [search, setSearch] = useState([]);
-  const [result, setResult] = useState([])
-  const [history, setHistory]=useState([])
+    const [searchTerm, setSearchTerm] = useState([]);
+    const [articles, setArticles] = useState([]);
+    const [searchHistory, setSearchHistory] = useState([]);
+    const [historyVisible, setHistoryVisible] = useState(false);
 
-const handleSearch = async e => {
-  e.preventDefault();
-  
-    const response = await fetch(`https://en.wikipedia.org/w/rest.php/v1/search/title?q=${search}&limit=20`,
-      {'Api-User-Agent': 'MediaWiki REST API docs examples/0.1 (https://www.mediawiki.org/wiki/API_talk:REST_API)'});
-    if (search === '') return
-    if (!response.ok) {
-      throw Error(response.statusText);
+    const handleSearch = async e => {
+      e.preventDefault();
+
+    const response = await fetch(`https://en.wikipedia.org/w/rest.php/v1/search/title?q=${searchTerm}&limit=20`);
+
+    const data = await response.json();
+
+    const articles = data.pages.map((articleData) => {
+       return {
+         id: articleData.id,
+         title: articleData.title,
+         description: articleData.description,
+         url: `https://en.wikipedia.org/wiki/${articleData.key}`,
+         code: articleData.code
+        };
+      });
+
+    setArticles(articles);
+    setSearchHistory(prev => [ searchTerm, ...prev]);
+    setSearchTerm('')
     }
-    const data = await response.json()
-   
-  const searchArticles= data.pages.map((articleData) => {
-      return {
-        id: articleData.id,
-        title: articleData.title,
-        description: articleData.description,
-        url: `https://en.wikipedia.org/wiki/${articleData.key}`,
-      };
-    });
-
-  console.log(searchArticles);
-  setSearch('')
-  setResult('searchArticles')
-
-
-  }
-  const handleOnClickHistory = (prevState) => {
-    setHistory(prevState => [...prevState, search])
-    console.log('ok')
+  const handleHistoryButton = () => {
+    setHistoryVisible(!historyVisible)
   }
   return (
-    <React.Fragment>
-      <header>
-        <h1> Wiki Search</h1>
-          <form className="search" onSubmit={handleSearch}>
-            <input
-             type="searchInput"
-              placeholder="Looking for....."
-              value={search}
-              onChange={e=>setSearch(e.target.value)}
-            />
-          </form>
-      </header>
-      <section>
-        <ArticlesList articles={result} />
-        <button className="showHistory" onClick={handleOnClickHistory}>Show History</button>
-              <div>
-                {history.map((items, index) => {
-                  return (
-                    <div key={index}> {items} </div>)
-                
-              })}</div>
-      </section>
-    </React.Fragment>
-  );
+      <React.Fragment>
+          <header>
+                <h1> Wiki Search</h1>
+                <form className="search" onSubmit={handleSearch}>
+                    <input
+                        type="searchInput"
+                        placeholder="Looking for....."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                    />
+                </form>
+          </header>
+          <Button className="showHistory"
+                  click={handleHistoryButton}
+                  active={!historyVisible}/>
+          <div>{historyVisible && (<ShowHistory searchHistory={searchHistory}/>)}</div>
+          <ArticlesList articles={articles}/>
+      </React.Fragment>
+    );
 }
 
 export default App;
