@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState} from 'react';
 
 import ArticlesList from './ArticlesList';
 import Button from './Button';
@@ -10,34 +10,42 @@ function App() {
     const [articles, setArticles] = useState([]);
     const [searchHistory, setSearchHistory] = useState([]);
     const [historyVisible, setHistoryVisible] = useState(false);
+    const [error, setError] = useState(null);
+  
+    const handleHistoryButton = () => {
+    setHistoryVisible(!historyVisible)
+      }
 
     const handleSearch = async e => {
       e.preventDefault();
+      setError(null);
 
-    const response = await fetch(`https://en.wikipedia.org/w/rest.php/v1/search/title?q=${searchTerm}&limit=20`);
-    if (search === '') return
-    if (!response.ok) {
-      throw Error(response.statusText);
-    }
+      try {
+         const response = await fetch(`https://en.wikipedia.org/w/rest.php/v11/search/title?q=${searchTerm}&limit=20`);
+      if (searchTerm === '') return
+      if (!response.ok) {
+      throw Error();
+      } 
+        const data = await response.json();
 
-    const data = await response.json();
+        const articles = data.pages.map((articleData) => {
+            return {
+                id: articleData.id,
+                title: articleData.title,
+                description: articleData.description,
+                url: `https://en.wikipedia.org/wiki/${articleData.key}`,
+                code: articleData.code
+             };
+        });
 
-    const articles = data.pages.map((articleData) => {
-       return {
-         id: articleData.id,
-         title: articleData.title,
-         description: articleData.description,
-         url: `https://en.wikipedia.org/wiki/${articleData.key}`,
-         code: articleData.code
-        };
-      });
+        setArticles(articles);
+        setSearchHistory(prev => [ searchTerm, ...prev]);
+        setSearchTerm('');
+      } catch (error) {
+        setError('error')
+      };
 
-    setArticles(articles);
-    setSearchHistory(prev => [ searchTerm, ...prev]);
-    setSearchTerm('');
-    }
-  const handleHistoryButton = () => {
-    setHistoryVisible(!historyVisible)
+     
   }
   return (
       <React.Fragment>
@@ -51,12 +59,19 @@ function App() {
                         onChange={e => setSearchTerm(e.target.value)}
                     />
                 </form>
-          </header>
-          <Button className="showHistory"
+      </header>
+      <section>
+        {error && <h2>{"Sorry it's a lunch time..."}</h2>}
+        {articles.length > 0 &&
+          (<div><Button className="showHistory"
                   click={handleHistoryButton}
                   active={!historyVisible}/>
-          <div>{historyVisible && (<ShowHistory searchHistory={searchHistory}/>)}</div>
-          <ArticlesList articles={articles}/>
+          <div>{historyVisible && (<ShowHistory searchHistory={searchHistory}/>)}</div></div>
+          )
+        }
+
+      </section>
+      <ArticlesList articles={articles}/>
       </React.Fragment>
     );
 }
