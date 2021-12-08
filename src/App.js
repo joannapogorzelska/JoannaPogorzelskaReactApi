@@ -21,7 +21,7 @@ function App() {
       setError(null);
 
       try {
-         const response = await fetch(`https://en.wikipedia.org/w/rest.php/v11/search/title?q=${searchTerm}&limit=20`);
+         const response = await fetch(`https://en.wikipedia.org/w/rest.php/v1/search/title?q=${searchTerm}&limit=20`);
       if (searchTerm === '') return
       if (!response.ok) {
       throw Error();
